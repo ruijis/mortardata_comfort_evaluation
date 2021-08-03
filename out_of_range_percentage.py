@@ -2,7 +2,7 @@
 import pandas as pd
 
 
-def degree_hours(l, u, f):
+def percentage(l, u, f):
     """
     Calculate the percentage of occupied time outside a temeprature range.
     The occupied time is supposed to be from 9 am to 5 pm at weekdays. 
@@ -27,14 +27,15 @@ def degree_hours(l, u, f):
     df = pd.read_csv(f)
     time = df.columns[0]
     temp = df.columns[1]
-    # add a new column of weekdays
-    df['wkdays'] = pd.to_datetime(df[time]).dt.dayofweek
-    # calculate the interval (seconds) between two time stamps
-    ts = pd.to_datetime(df[time][1]) - pd.to_datetime(df[time][0])
-    ts_sec = ts.seconds
-    # get rows that are out of the range
-    df_out = df[(df[temp] < l) | (df[temp] > u)]
-    out_sec = len(df_out)
-    all_sec = len(df)
+    df['hour'] = pd.to_datetime(df[time]).dt.hour
+    df['weekdays'] = pd.to_datetime(df[time]).dt.dayofweek
+    # create a new occupied dataframe from 9 am to 5 pm at weekdays
+    df_occ = df[(df['hour'] >= 9) & (df['hour'] < 17) &
+                (df['weekdays'] >= 0) & (df['weekdays'] <= 4)]
+    # get rows from the new dataframe that are out of the temperature range
+    df_out = df_occ[(df_occ[temp] < l) | (df_occ[temp] > u)]
+    # Calculate the percentage of occupied time outside a temeprature range
+    p = len(df_out) / len(df_occ)
+    return p
     
     
