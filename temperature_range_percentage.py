@@ -2,7 +2,7 @@
 import pandas as pd
 
 
-def percentage(l, u, f):
+def temp_range(l, u, f):
     """
     Calculate the percentage of occupied time outside a temeprature range.
     The occupied time is supposed to be from 9 am to 5 pm at weekdays. 

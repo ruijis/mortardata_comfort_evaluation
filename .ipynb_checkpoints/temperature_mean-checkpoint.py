@@ -2,7 +2,7 @@
 import pandas as pd
 
 
-def mean_temp(f):
+def temp_mean(f):
     """
     Calculate mean value of the temperature at occupied time.
     The occupied time is supposed to be from 9 am to 5 pm at weekdays. 
