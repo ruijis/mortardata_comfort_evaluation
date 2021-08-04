@@ -13,7 +13,7 @@ def mean_temp(f):
     Parameters
     ----------
     f : string
-        file path of the csv dataset
+        file path of the CSV dataset
     
     Returns
     ----------

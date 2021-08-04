@@ -17,7 +17,7 @@ def percentage(l, u, f):
     u : float
         upper bound of the temperature range, with same units of the data
     f : string
-        file path of the csv dataset
+        file path of the CSV dataset
     
     Returns
     ----------
