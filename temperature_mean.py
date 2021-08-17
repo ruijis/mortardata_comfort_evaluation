@@ -2,7 +2,7 @@
 import pandas as pd
 
 
-def temp_mean(f):
+def temp_mean(a, b, f):
     """
     Calculate mean value of the temperature at occupied time.
     The occupied time is supposed to be from 9 am to 5 pm at weekdays. 
@@ -12,6 +12,10 @@ def temp_mean(f):
     
     Parameters
     ----------
+    a : int
+        The start time (24-hour clock) of normal office hours during weekdays
+    b : int
+        The end time (24-hour clock) of normal office hours during weekdays
     f : string
         file path of the CSV dataset
     
@@ -25,8 +29,8 @@ def temp_mean(f):
     temp = df.columns[1]
     df['hour'] = pd.to_datetime(df[time]).dt.hour
     df['weekdays'] = pd.to_datetime(df[time]).dt.dayofweek
-    # create a new occupied dataframe from 9 am to 5 pm at weekdays
-    df_occ = df[(df['hour'] >= 9) & (df['hour'] < 17) &
+    # create a new dataframe for the specified office hours and weekdays
+    df_occ = df[(df['hour'] >= a) & (df['hour'] < b) &
                 (df['weekdays'] >= 0) & (df['weekdays'] <= 4)]
     # Calculate mean value of the temperature from the new datafram
     m = df_occ[df_occ.columns[1]].mean()

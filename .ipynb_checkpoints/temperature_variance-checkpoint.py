@@ -2,7 +2,7 @@
 import pandas as pd
 
 
-def temp_var(f):
+def temp_var(a, b, f):
     """
     Calculate variance of occupied hourly average temperature data.
     The occupied time is supposed to be from 9 am to 5 pm at weekdays. 
@@ -12,6 +12,10 @@ def temp_var(f):
     
     Parameters
     ----------
+    a : int
+        The start time (24-hour clock) of normal office hours during weekdays
+    b : int
+        The end time (24-hour clock) of normal office hours during weekdays
     f : string
         file path of the CSV dataset
     
@@ -27,8 +31,8 @@ def temp_var(f):
     df['date'] = pd.to_datetime(df[time]).dt.date
     df['hour'] = pd.to_datetime(df[time]).dt.hour
     df['weekdays'] = pd.to_datetime(df[time]).dt.dayofweek
-    # create a new occupied dataframe from 9 am to 5 pm at weekdays
-    df_occ = df[(df['hour'] >= 9) & (df['hour'] < 17) &
+    # create a new dataframe for the specified office hours and weekdays
+    df_occ = df[(df['hour'] >= a) & (df['hour'] < b) &
                 (df['weekdays'] >= 0) & (df['weekdays'] <= 4)]
     # get hourly average data by grouping by date frist and hour, then mean
     df_hrs = df_occ.groupby(['date', 'hour']).mean()
