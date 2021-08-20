@@ -2,9 +2,9 @@
 import pandas as pd
 
 
-def temp_daily(a, b, p, f):
+def temp_degree(a, b, l, u, w, f):
     """
-    Calculate the percentage of occupied time whose range is outside the threshold.
+    Calculate the product sum of weighted factors and exposure time time.
     The data file type should be CSV.
     The first column of the CSV file should be time.
     The second column of the CSV file should be temperature.
@@ -15,35 +15,34 @@ def temp_daily(a, b, p, f):
         The start time (24-hour clock) of normal office hours during weekdays
     b : int
         The end time (24-hour clock) of normal office hours during weekdays
-    p : float
-        the precentile threshold of daily temperature range, eg. 0.2
+    l : float
+        lower bound of the tempearture range, with same units of the data
+    u : float
+        upper bound of the temperature range, with same units of the data
+    w : string
+        the weighting factor calculation method, either ISO or EN
     f : string
         file path of the CSV dataset
-        
+
+
     Returns
     ----------
     p : float
         percentage of the time
     """
+    wf = 
     df = pd.read_csv(f)
     time = df.columns[0]
     temp = df.columns[1]
-    # get the date from the time for groupby function later on
-    df['date'] = pd.to_datetime(df[time]).dt.date
     df['hour'] = pd.to_datetime(df[time]).dt.hour
     df['weekdays'] = pd.to_datetime(df[time]).dt.dayofweek
     # create a new dataframe for the specified office hours and weekdays
     df_occ = df[(df['hour'] >= a) & (df['hour'] < b) &
                 (df['weekdays'] >= 0) & (df['weekdays'] <= 4)]
-    # calculate daily temperature range by max minus min
-    df_max = df_occ.groupby(['date']).max()
-    df_min = df_occ.groupby(['date']).min()
-    df_range = df_max[temp] - df_min[temp]
-    # get rows from the new dataframe that are out of the threshold
-    t = df_range.quantile(0.8)
-    df_out = df_range[(df_range > t)]
-    # Calculate the percentage of occupied time outside the threshold
-    p = len(df_out) / len(df_max)
+    # get rows from the new dataframe that are out of the temperature range
+    df_out = df_occ[(df_occ[temp] < l) | (df_occ[temp] > u)]
+    # Calculate the percentage of occupied time outside a temeprature range
+    p = len(df_out) / len(df_occ)
     return p
-
-
+    
+    
