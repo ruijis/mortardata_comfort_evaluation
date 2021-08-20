@@ -5,7 +5,6 @@ import pandas as pd
 def temp_mean(a, b, f):
     """
     Calculate mean value of the temperature at occupied time.
-    The occupied time is supposed to be from 9 am to 5 pm at weekdays. 
     The data file type should be CSV.
     The first column of the CSV file should be time.
     The second column of the CSV file should be temperature.

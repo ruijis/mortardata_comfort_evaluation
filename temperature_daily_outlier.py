@@ -2,7 +2,7 @@
 import pandas as pd
 
 
-def temp_daily(a, b, t, f):
+def temp_daily(a, b, p, f):
     """
     Calculate the percentage of occupied time whose range is outside the threshold.
     The data file type should be CSV.
@@ -15,8 +15,8 @@ def temp_daily(a, b, t, f):
         The start time (24-hour clock) of normal office hours during weekdays
     b : int
         The end time (24-hour clock) of normal office hours during weekdays
-    t : float
-        the threshold of daily temperature range
+    p : float
+        the precentile threshold of daily temperature range
     f : string
         file path of the CSV dataset
         
@@ -35,12 +35,12 @@ def temp_daily(a, b, t, f):
     # create a new dataframe for the specified office hours and weekdays
     df_occ = df[(df['hour'] >= a) & (df['hour'] < b) &
                 (df['weekdays'] >= 0) & (df['weekdays'] <= 4)]
-    # calculate daily temperature range
-    # might need calculate max and min seperately
+    # calculate daily temperature range by max minus min
     df_max = df_occ.groupby(['date']).max()
     df_min = df_occ.groupby(['date']).min()
     df_range = df_max[temp] - df_min[temp]
     # get rows from the new dataframe that are out of the threshold
+    t = df_range.quantile(0.8)
     df_out = df_range[(df_range > t)]
     # Calculate the percentage of occupied time outside the threshold
     p = len(df_out) / len(df_max)
