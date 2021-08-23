@@ -1,8 +1,8 @@
 """Import packages for data engineering"""
 import pandas as pd
+import glob
 
-
-def temp_degree(a, b, l, u, w, f):
+def temp_degree(a, b, l, u, s, f):
     """
     Calculate the product sum of weighted factors and exposure time time.
     The data file type should be CSV.
@@ -19,10 +19,10 @@ def temp_degree(a, b, l, u, w, f):
         lower bound of the tempearture range, with same units of the data
     u : float
         upper bound of the temperature range, with same units of the data
-    w : string
+    s : string
         the weighting factor calculation method, either ISO or EN
     f : string
-        file path of the CSV dataset
+        path of the fold that stores all CSV files
 
 
     Returns
@@ -30,7 +30,10 @@ def temp_degree(a, b, l, u, w, f):
     p : float
         percentage of the time
     """
-    wf = 
+    if s == 'ISO':
+        w = 1 + 
+    elif s == 'EN':
+        w = abs()
     df = pd.read_csv(f)
     time = df.columns[0]
     temp = df.columns[1]
@@ -41,6 +44,7 @@ def temp_degree(a, b, l, u, w, f):
                 (df['weekdays'] >= 0) & (df['weekdays'] <= 4)]
     # get rows from the new dataframe that are out of the temperature range
     df_out = df_occ[(df_occ[temp] < l) | (df_occ[temp] > u)]
+    df_wf = df
     # Calculate the percentage of occupied time outside a temeprature range
     p = len(df_out) / len(df_occ)
     return p

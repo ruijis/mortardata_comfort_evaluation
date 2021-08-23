@@ -1,6 +1,6 @@
 """Import packages for data engineering"""
 import pandas as pd
-
+import glob
 
 def temp_mean(a, b, f):
     """
@@ -16,23 +16,30 @@ def temp_mean(a, b, f):
     b : int
         The end time (24-hour clock) of normal office hours during weekdays
     f : string
-        file path of the CSV dataset
+        path of the fold that stores all CSV files
     
     Returns
     ----------
     m : float
         mean value of the tempearture
     """
-    df = pd.read_csv(f)
-    time = df.columns[0]
-    temp = df.columns[1]
-    df['hour'] = pd.to_datetime(df[time]).dt.hour
-    df['weekdays'] = pd.to_datetime(df[time]).dt.dayofweek
-    # create a new dataframe for the specified office hours and weekdays
-    df_occ = df[(df['hour'] >= a) & (df['hour'] < b) &
-                (df['weekdays'] >= 0) & (df['weekdays'] <= 4)]
-    # Calculate mean value of the temperature from the new datafram
-    m = df_occ[df_occ.columns[1]].mean()
-    return m
+    path = glob.glob(f"{f}/*.csv")
+    res_zone = []
+    res_value = []
+    for i in path:
+        df = pd.read_csv(i)
+        time = df.columns[0]
+        temp = df.columns[1]
+        df['hour'] = pd.to_datetime(df[time]).dt.hour
+        df['weekdays'] = pd.to_datetime(df[time]).dt.dayofweek
+        # create a new dataframe for the specified office hours and weekdays
+        df_occ = df[(df['hour'] >= a) & (df['hour'] < b) &
+                    (df['weekdays'] >= 0) & (df['weekdays'] <= 4)]
+        # Calculate mean value of the temperature from the new datafram
+        m = df_occ[df_occ.columns[1]].mean()
+        res_zone.append(i.partition(f)[2])
+        res_value.append(m)
+    res = pd.DataFrame({'zone name': res_zone, 'temperature mean': res_value})
+    return res.sort_values(['temperature mean'], ascending=[False])
     
     
