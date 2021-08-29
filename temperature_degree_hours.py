@@ -30,23 +30,15 @@ def temp_degree(a, b, l, u, s, f):
     p : float
         percentage of the time
     """
-    if s == 'ISO':
-        w = 1 + 
-    elif s == 'EN':
-        w = abs()
     df = pd.read_csv(f)
     time = df.columns[0]
     temp = df.columns[1]
-    df['hour'] = pd.to_datetime(df[time]).dt.hour
-    df['weekdays'] = pd.to_datetime(df[time]).dt.dayofweek
-    # create a new dataframe for the specified office hours and weekdays
-    df_occ = df[(df['hour'] >= a) & (df['hour'] < b) &
-                (df['weekdays'] >= 0) & (df['weekdays'] <= 4)]
-    # get rows from the new dataframe that are out of the temperature range
-    df_out = df_occ[(df_occ[temp] < l) | (df_occ[temp] > u)]
-    df_wf = df
+    # get temperature data that are higher than the upper bound
+    df_hot = df[(df[temp] > u)]
+    df_hot_diff = df_hot[temp] - u
+    # get temperature difference that are lower than the lower bound
+    df_cold = df[(df[temp] < l)]
+    df_cold_diff = l - df_cold[temp]
     # Calculate the percentage of occupied time outside a temeprature range
-    p = len(df_out) / len(df_occ)
+    p = (len(df_hot) + len(df_cold)) / len(df)
     return p
-    
-    
