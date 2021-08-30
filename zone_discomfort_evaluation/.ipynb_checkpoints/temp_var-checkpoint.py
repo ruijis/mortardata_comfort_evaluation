@@ -39,7 +39,6 @@ def temp_var(a, b, f):
                     (df['weekdays'] >= 0) & (df['weekdays'] <= 4)]
         # get hourly average data by grouping by date frist and hour, then mean
         df_hrs = df_occ.groupby(['date', 'hour']).mean()
-        print(df_hrs)
         # calculate variance of occupied hourly average temperature data.
         v = df_hrs[temp].var()
         res_zone.append(i.partition(f)[2])

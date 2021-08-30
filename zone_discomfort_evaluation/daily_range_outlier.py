@@ -3,7 +3,7 @@ import pandas as pd
 import glob
 import matplotlib.pyplot as plt
 
-def temp_daily(a, b, t, f, e):
+def daily_range_outlier(a, b, t, f, e):
     """
     Calculate the percentage of occupied time whose range is outside the threshold.
     The data file type should be CSV.

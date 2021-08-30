@@ -2,7 +2,7 @@
 import pandas as pd
 import glob
 
-def temp_degree(l, u, s, f):
+def degree_hours(l, u, s, f):
     """
     Calculate the product sum of weighted factors and exposure time time.
     The data file type should be CSV.
