@@ -1,71 +1,68 @@
 """Import packages for querying dataset"""
 import pymortar
 import pandas as pd
-import re
 
-def hourly_outlier(q, s, a, b, c, d, l, u):
+def hourly_outlier(md, sd, ed, sh, eh, sl, su, wl, wu):
     """
     Calculate the percentage of normal occupied time outside a specified temeprature range.
     The normal occupied days is Monday to Friday but the occupied time can be specified.
     
     Parameters
     ----------
-    q : str
-        sparql query using brick metadata schema
-    s : str
-        single qualied site name, using abbreviation
-    a : str
-        start date with format year-month-day, e.g.'2016-1-1'
-    b : str
-        end date with format year-month-day, e.g.'2016-1-31'
-    c : int
-        start hour of normal occupied time with 24-hour clock, e.g. 9
-    d : int
-        end hour of normal occupied time with 24-hour clock, e.g. 17
-    l : float
-        lower bound of the tempearture range, with default F unit
-    u : float
-        upper bound of the temperature range, with default F unit
+    md : str
+         sensor metadata with prefix of http://buildsys.org/ontologies
+    sd : str
+         start date with format year-month-day, e.g.'2016-1-1'
+    ed : str
+         end date with format year-month-day, e.g.'2016-1-31'
+    sh : int
+         start hour of normal occupied time with 24-hour clock, e.g. 9
+    eh : int
+         end hour of normal occupied time with 24-hour clock, e.g. 17
+    sl : float
+         lower bound of the tempearture range in summer, with default F unit
+    su : float
+         upper bound of the temperature range in summer, with default F unit
+    wl : float
+         lower bound of the tempearture range in summer, with default F unit
+    wu : float
+         upper bound of the temperature range in summer, with default F unit
 
     Returns
     ----------
     p : float
-        percentage of the time
+        percentage of outside range time
     """
-    assert isinstance(a, str), 'The start date should be in a string.'
-    assert isinstance(b, str), 'The end date should be in a string.'
-    assert c < d, "The start and end hour should be 24-hour clock."
-
+    assert isinstance(sd, str), 'The start date should be in a string.'
+    assert isinstance(ed, str), 'The end date should be in a string.'
+    assert sh < eh, "The start and end hour should be 24-hour clock."
     # connect client to Mortar frontend server
-    url  = "https://beta-api.mortardata.org"
-    ct = pymortar.Client(url)
-    # get the brick metadata of the query sensor at the specified site
-    meta = ct.sparql(q, sites=[s])
-    zone = []
-    res = []
-    for id in meta.sensor:
-        # get dataset using the ontology url as id
-        q_res = ct.data_uris([id])
-        data = q_res.data
-        # get a pandas dataframe between start date and end date of the data
-        a = pd.to_datetime(a, unit='ns', utc=True)
-        b = pd.to_datetime(b, unit='ns', utc=True)
-        df = data[(data['time'] >= a) & (data['time'] <= b)]
-        # parse the hour and weekday info and add it as a column
-        df['hr'] = pd.to_datetime(df['time']).dt.hour
-        df['wk'] = pd.to_datetime(df['time']).dt.dayofweek
-        # get rows that among the specified office hours during weekdays
-        df_occ = df[(df['hr'] >= c) & (df['hr'] < d) &
-                    (df['wk'] >= 0) & (df['wk'] <= 4)]
-        # get rows that are out of the temperature range
-        df_out = df_occ[(df_occ['value'] < l) | (df_occ['value'] > u)]
-        # Calculate the percentage of occupied time outside the temeprature range
-        p = len(df_out) / len(df_occ)
-        id_zone = re.split('[.]', id)[-2]
-        zone.append(id_zone)
-        res.append(p)
-    df_res = pd.DataFrame({'zone': zone, 'hourly_outlier percentage': res})
-    df_sort = df_res.sort_values(['hourly_outlier percentage'], ascending=[False])
-    return  df_sort
+    client = pymortar.Client("https://beta-api.mortardata.org")
+    data_sensor = client.data_uris([md])
+    data = data_sensor.data
+    # get a pandas dataframe between start date and end date of the data
+    sd_ns = pd.to_datetime(sd, unit='ns', utc=True)
+    ed_ns = pd.to_datetime(ed, unit='ns', utc=True)
+    df = data[(data['time'] >= sd_ns) & (data['time'] <= ed_ns)]
+    # parse the hour and weekday info and add it as a column
+    df['hr'] = pd.to_datetime(df['time']).dt.hour
+    df['wk'] = pd.to_datetime(df['time']).dt.dayofweek
+    df['mo'] = pd.to_datetime(df['time']).dt.month
+    # create occupied df by normal office hours and by weekdays
+    df_occ = df[(df['hr'] >= sh) & (df['hr'] < eh) &
+                (df['wk'] >= 0) & (df['wk'] <= 4)]
+    # split the occupied data to the summer and  winter
+    df_occ_sum = df_occ[(df_occ['mo'] >= 6) & (df_occ['mo'] <= 8)]
+    df_occ_win = df_occ[(df_occ['mo'] >= 12) | (df_occ['mo'] <= 2)]
+    # create df that is lower or upper the temperature range
+    df_sum_out = df_occ_sum[(df_occ_sum['value'] < sl) | 
+                            (df_occ_sum['value'] > su)]
+    df_win_out = df_occ_win[(df_occ_win['value'] < wl) |
+                           (df_occ_win['value'] > wu)]
+    # the number of summer and winter occupied time
+    n_occ_all = len(df_occ_sum) + len(df_occ_win)
+    # Calculate the percentage of occupied time outside the temeprature range
+    p = (len(df_sum_out) + len(df_win_out)) / n_occ_all if n_occ_all != 0 else 0
+    return round(p, 2)
     
     
