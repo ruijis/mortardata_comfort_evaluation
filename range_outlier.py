@@ -2,7 +2,7 @@
 import pymortar
 import pandas as pd
 
-def hourly_outlier(md, sd, ed, sh, eh, sl, su, wl, wu):
+def range_outlier(md, sd, ed, sh, eh, sl, su, wl, wu):
     """
     Calculate the percentage of normal occupied time outside a specified temeprature range.
     The normal occupied days is Monday to Friday but the occupied time can be specified.
@@ -52,8 +52,8 @@ def hourly_outlier(md, sd, ed, sh, eh, sl, su, wl, wu):
     df_occ = df[(df['hr'] >= sh) & (df['hr'] < eh) &
                 (df['wk'] >= 0) & (df['wk'] <= 4)]
     # split the occupied data to the summer and  winter
-    df_occ_sum = df_occ[(df_occ['mo'] >= 6) & (df_occ['mo'] <= 8)]
-    df_occ_win = df_occ[(df_occ['mo'] >= 12) | (df_occ['mo'] <= 2)]
+    df_occ_sum = df_occ[(df_occ['mo'] >= 5) & (df_occ['mo'] <= 10)]
+    df_occ_win = df_occ[(df_occ['mo'] >= 11) | (df_occ['mo'] <= 4)]
     # create df that is lower or upper the temperature range
     df_sum_out = df_occ_sum[(df_occ_sum['value'] < sl) | 
                             (df_occ_sum['value'] > su)]
