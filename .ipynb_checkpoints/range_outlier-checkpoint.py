@@ -1,4 +1,3 @@
-"""Import packages for querying dataset"""
 import pymortar
 import pandas as pd
 
@@ -24,9 +23,9 @@ def range_outlier(md, sd, ed, sh, eh, sl, su, wl, wu):
     su : float
          upper bound of the temperature range in summer, with default F unit
     wl : float
-         lower bound of the tempearture range in summer, with default F unit
+         lower bound of the tempearture range in winter, with default F unit
     wu : float
-         upper bound of the temperature range in summer, with default F unit
+         upper bound of the temperature range in winter, with default F unit
 
     Returns
     ----------

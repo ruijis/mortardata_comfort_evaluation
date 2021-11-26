@@ -1,9 +1,9 @@
 import pymortar
 import pandas as pd
 
-def range_outlier(md, sd, ed, sh, eh, sl, su, wl, wu):
+def overheating_outlier(md, sd, ed, sh, eh, su, wu):
     """
-    Calculate the percentage of normal occupied time outside a specified temeprature range.
+    Calculate the percentage of normal occupied time higher than a specified temeprature range.
     The normal occupied days is Monday to Friday but the occupied time can be specified.
     
     Parameters
@@ -18,12 +18,8 @@ def range_outlier(md, sd, ed, sh, eh, sl, su, wl, wu):
          start hour of normal occupied time with 24-hour clock, e.g. 9
     eh : int
          end hour of normal occupied time with 24-hour clock, e.g. 17
-    sl : float
-         lower bound of the tempearture range in summer, with default F unit
     su : float
          upper bound of the temperature range in summer, with default F unit
-    wl : float
-         lower bound of the tempearture range in winter, with default F unit
     wu : float
          upper bound of the temperature range in winter, with default F unit
 
@@ -50,14 +46,12 @@ def range_outlier(md, sd, ed, sh, eh, sl, su, wl, wu):
     # create occupied df by normal office hours and by weekdays
     df_occ = df[(df['hr'] >= sh) & (df['hr'] < eh) &
                 (df['wk'] >= 0) & (df['wk'] <= 4)]
-    # split the occupied data to the summer and  winter
+    # split the occupied data to the summer and winter
     df_occ_sum = df_occ[(df_occ['mo'] >= 5) & (df_occ['mo'] <= 10)]
     df_occ_win = df_occ[(df_occ['mo'] >= 11) | (df_occ['mo'] <= 4)]
-    # create df that is lower or upper the temperature range
-    df_sum_out = df_occ_sum[(df_occ_sum['value'] < sl) | 
-                            (df_occ_sum['value'] > su)]
-    df_win_out = df_occ_win[(df_occ_win['value'] < wl) |
-                           (df_occ_win['value'] > wu)]
+    # create df that is higher than the upper bound of the temperature range
+    df_sum_out = df_occ_sum[(df_occ_sum['value'] > su)]
+    df_win_out = df_occ_win[(df_occ_win['value'] > wu)]
     # the number of summer and winter occupied time
     n_occ_all = len(df_occ_sum) + len(df_occ_win)
     # Calculate the percentage of occupied time outside the temeprature range

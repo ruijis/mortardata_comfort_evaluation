@@ -1,9 +1,9 @@
 import pymortar
 import pandas as pd
 
-def range_outlier(md, sd, ed, sh, eh, sl, su, wl, wu):
+def overcooling_outlier(md, sd, ed, sh, eh, sl, wl):
     """
-    Calculate the percentage of normal occupied time outside a specified temeprature range.
+    Calculate the percentage of normal occupied time lower than a specified temeprature range.
     The normal occupied days is Monday to Friday but the occupied time can be specified.
     
     Parameters
@@ -19,13 +19,9 @@ def range_outlier(md, sd, ed, sh, eh, sl, su, wl, wu):
     eh : int
          end hour of normal occupied time with 24-hour clock, e.g. 17
     sl : float
-         lower bound of the tempearture range in summer, with default F unit
-    su : float
-         upper bound of the temperature range in summer, with default F unit
+         lower bound of the temperature range in summer, with default F unit
     wl : float
-         lower bound of the tempearture range in winter, with default F unit
-    wu : float
-         upper bound of the temperature range in winter, with default F unit
+         lower bound of the temperature range in winter, with default F unit
 
     Returns
     ----------
@@ -54,10 +50,8 @@ def range_outlier(md, sd, ed, sh, eh, sl, su, wl, wu):
     df_occ_sum = df_occ[(df_occ['mo'] >= 5) & (df_occ['mo'] <= 10)]
     df_occ_win = df_occ[(df_occ['mo'] >= 11) | (df_occ['mo'] <= 4)]
     # create df that is lower or upper the temperature range
-    df_sum_out = df_occ_sum[(df_occ_sum['value'] < sl) | 
-                            (df_occ_sum['value'] > su)]
-    df_win_out = df_occ_win[(df_occ_win['value'] < wl) |
-                           (df_occ_win['value'] > wu)]
+    df_sum_out = df_occ_sum[(df_occ_sum['value'] < sl)]
+    df_win_out = df_occ_win[(df_occ_win['value'] < wl)]
     # the number of summer and winter occupied time
     n_occ_all = len(df_occ_sum) + len(df_occ_win)
     # Calculate the percentage of occupied time outside the temeprature range

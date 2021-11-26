@@ -1,45 +1,46 @@
-"""Import packages for data engineering"""
+import pymortar
 import pandas as pd
-import glob
 
-def temp_mean(a, b, f):
+def temp_mean(md, sd, ed, sh, eh):
     """
     Calculate mean value of the temperature at occupied time.
-    The data file type should be CSV.
-    The first column of the CSV file should be time.
-    The second column of the CSV file should be temperature.
     
     Parameters
     ----------
-    a : int
-        The start time (24-hour clock) of normal office hours during weekdays
-    b : int
-        The end time (24-hour clock) of normal office hours during weekdays
-    f : string
-        path of the fold that stores all CSV files
+    md : str
+         sensor metadata with prefix of http://buildsys.org/ontologies
+    sd : str
+         start date with format year-month-day, e.g.'2016-1-1'
+    ed : str
+         end date with format year-month-day, e.g.'2016-1-31'
+    sh : int
+         start hour of normal occupied time with 24-hour clock, e.g. 9
+    eh : int
+         end hour of normal occupied time with 24-hour clock, e.g. 17
     
     Returns
     ----------
     m : float
         mean value of the tempearture
     """
-    path = glob.glob(f"{f}/*.csv")
-    res_zone = []
-    res_value = []
-    for i in path:
-        df = pd.read_csv(i)
-        time = df.columns[0]
-        temp = df.columns[1]
-        df['hour'] = pd.to_datetime(df[time]).dt.hour
-        df['weekdays'] = pd.to_datetime(df[time]).dt.dayofweek
-        # create a new dataframe for the specified office hours and weekdays
-        df_occ = df[(df['hour'] >= a) & (df['hour'] < b) &
-                    (df['weekdays'] >= 0) & (df['weekdays'] <= 4)]
-        # Calculate mean value of the temperature from the new datafram
-        m = df_occ[df_occ.columns[1]].mean()
-        res_zone.append(i.partition(f)[2])
-        res_value.append(m)
-    res = pd.DataFrame({'zone name': res_zone, 'temperature mean': res_value})
-    return res.sort_values(['temperature mean'], ascending=[False])
-    
+    assert isinstance(sd, str), 'The start date should be in a string.'
+    assert isinstance(ed, str), 'The end date should be in a string.'
+    assert sh < eh, "The start and end hour should be 24-hour clock."
+    # connect client to Mortar frontend server
+    client = pymortar.Client("https://beta-api.mortardata.org")
+    data_sensor = client.data_uris([md])
+    data = data_sensor.data
+    # get a pandas dataframe between start date and end date of the data
+    sd_ns = pd.to_datetime(sd, unit='ns', utc=True)
+    ed_ns = pd.to_datetime(ed, unit='ns', utc=True)
+    df = data[(data['time'] >= sd_ns) & (data['time'] <= ed_ns)]
+    # parse the hour and weekday info and add it as a column
+    df['hr'] = pd.to_datetime(df['time']).dt.hour
+    df['wk'] = pd.to_datetime(df['time']).dt.dayofweek
+    # create occupied df by normal office hours and by weekdays
+    df_occ = df[(df['hr'] >= sh) & (df['hr'] < eh) &
+                (df['wk'] >= 0) & (df['wk'] <= 4)]
+    # Calculate mean value of the temperature from the new datafram
+    m = df_occ['value'].mean()
+    return round(m, 2)
     

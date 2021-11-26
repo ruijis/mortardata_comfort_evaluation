@@ -1,4 +1,3 @@
-"""Import packages for querying dataset"""
 import pymortar
 import pandas as pd
 
@@ -41,7 +40,6 @@ def daily_range_outlier(md, sd, ed, sh, eh, th):
     # parse the hour and weekday info and add it as a column
     df['hr'] = pd.to_datetime(df['time']).dt.hour
     df['wk'] = pd.to_datetime(df['time']).dt.dayofweek
-    df['mo'] = pd.to_datetime(df['time']).dt.month
     df['da'] = pd.to_datetime(df['time']).dt.date
     # create occupied df by normal office hours and by weekdays
     df_occ = df[(df['hr'] >= sh) & (df['hr'] < eh) &
