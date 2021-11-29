@@ -1,1 +1,1 @@
-pymortar>=2.0.0
+pymortar==2.0.5
